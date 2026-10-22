@@ -29,7 +29,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
-          pull: true   # always fetch the latest php:8.4-fpm-
+          pull: true   # always fetch the latest php:8.4-fpm-alpine
           push: true
           platforms: linux/amd64
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
@@ -37,4 +37,4 @@ jobs:
             ${{ env.IMAGE }}:latest
             ${{ env.IMAGE }}:build-${{ github.run_number }}
       - name: Show PHP version of the pushed image
-        run: docker run --rm --entrypoint php ${{ env.IMAGE }
+        run: docker run --rm --entrypoint php ${{ env.IMAGE }}:latest -v
