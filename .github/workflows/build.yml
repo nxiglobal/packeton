@@ -1,0 +1,40 @@
+name: build-packeton
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'   # Mondays 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE: ghcr.io/nxiglobal/packeton
+    steps:
+      # Upstream master, same source as packeton/packeton:latest
+      - uses: actions/checkout@v4
+        with:
+          repository: vtsykun/packeton
+          ref: master
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          pull: true   # always fetch the latest php:8.4-fpm-
+          push: true
+          platforms: linux/amd64
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:build-${{ github.run_number }}
+      - name: Show PHP version of the pushed image
+        run: docker run --rm --entrypoint php ${{ env.IMAGE }
